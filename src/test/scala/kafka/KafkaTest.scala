@@ -4,6 +4,7 @@ import java.util.Properties
 
 import kafka.consumer.{Consumer, ConsumerConfig}
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
+import kafka.serializer._
 import org.scalatest.FunSuite
 
 import scala.collection.mutable.ArrayBuffer
@@ -37,6 +38,8 @@ class KafkaTest extends FunSuite {
   private def consumeKafkaTopicMessages(): Unit = {
     val config = new ConsumerConfig(loadProperties("/kafka.consumer.properties"))
     val connector = Consumer.create(config)
+    val streams = connector.createMessageStreams(Map(kafkaTopic -> 1), new StringDecoder(), new StringDecoder())
+
   }
 
   private def loadProperties(file: String): Properties = {

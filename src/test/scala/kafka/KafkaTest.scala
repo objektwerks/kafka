@@ -47,7 +47,7 @@ class KafkaTest extends FunSuite {
     val config = new ConsumerConfig(loadProperties("/kafka.consumer.properties"))
     val connector = Consumer.create(config)
     val streams = connector.createMessageStreams(Map(kafkaTopic -> 1), new StringDecoder(), new StringDecoder())
-
+    // TODO
   }
 
   private def loadProperties(file: String): Properties = {

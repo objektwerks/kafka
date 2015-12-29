@@ -4,7 +4,7 @@ scalaVersion := "2.11.7"
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 libraryDependencies ++= {
   Seq(
-    "org.apache.kafka" % "kafka_2.11" % "0.9.0.0",
+    "org.apache.kafka" % "kafka_2.11" % "0.8.2.2",
     "ch.qos.logback" % "logback-classic" % "1.1.3",
     "org.scalatest" % "scalatest_2.11" % "2.2.5" % "test"
   )

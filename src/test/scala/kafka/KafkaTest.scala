@@ -2,9 +2,11 @@ package kafka
 
 import java.util.Properties
 
+import kafka.admin.AdminUtils
 import kafka.consumer.{Consumer, ConsumerConfig}
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
 import kafka.serializer._
+import kafka.utils.ZkUtils
 import org.scalatest.FunSuite
 
 import scala.collection.mutable.ArrayBuffer
@@ -20,7 +22,13 @@ class KafkaTest extends FunSuite {
   }
 
   private def createKafkaTopic(): Unit = {
-
+    val zkClient = ZkUtils.createZkClient("localhost:2181", 3000, 3000)
+    val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
+    val topicMetadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
+    topicMetadata.partitionsMetadata.foreach(println)
+    if (topicMetadata.topic != kafkaTopic) {
+      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, loadProperties("/kafka.producer.properties"))
+    }
   }
 
   private def produceAndSendKafkaTopicMessages(): Unit = {

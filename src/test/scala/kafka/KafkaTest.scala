@@ -1,8 +1,8 @@
-package cassandra
+package kafka
 
 import org.scalatest.FunSuite
 
-class CassandraTest extends FunSuite {
+class KafkaTest extends FunSuite {
   test("kafka") {
     
   }

@@ -5,7 +5,7 @@ import java.util.Properties
 import kafka.admin.AdminUtils
 import kafka.consumer.{Consumer, ConsumerConfig}
 import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import kafka.serializer._
+import kafka.serializer.StringDecoder
 import kafka.utils.ZkUtils
 import org.scalatest.FunSuite
 
@@ -28,6 +28,7 @@ class KafkaTest extends FunSuite {
     topicMetadata.partitionsMetadata.foreach(println)
     if (topicMetadata.topic != kafkaTopic) {
       AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, loadProperties("/kafka.producer.properties"))
+      println(s"Topic ( $kafkaTopic ) created.")
     }
   }
 
@@ -35,7 +36,7 @@ class KafkaTest extends FunSuite {
     val config = new ProducerConfig(loadProperties("/kafka.producer.properties"))
     val producer = new Producer[String, String](config)
     val keyedMessages = ArrayBuffer[KeyedMessage[String, String]]()
-    for (i <- 1 to 10) {
+    for (i <- 1 to 3) {
       val keyValue = i.toString
       keyedMessages += KeyedMessage[String, String](topic = kafkaTopic, key = keyValue, partKey = 0, message = keyValue)
     }
@@ -46,8 +47,10 @@ class KafkaTest extends FunSuite {
   private def consumeKafkaTopicMessages(): Unit = {
     val config = new ConsumerConfig(loadProperties("/kafka.consumer.properties"))
     val connector = Consumer.create(config)
-    val streams = connector.createMessageStreams(Map(kafkaTopic -> 1), new StringDecoder(), new StringDecoder())
-    // TODO
+    val topicToStreams = connector.createMessageStreams(Map(kafkaTopic -> 1), new StringDecoder(), new StringDecoder())
+    val streams = topicToStreams.get(kafkaTopic).get
+    streams.foreach { s => s.foreach { m => println(s"topic: ${m.topic} key: ${m.key} value: ${m.message}") } }
+    connector.shutdown()
   }
 
   private def loadProperties(file: String): Properties = {

@@ -17,8 +17,8 @@ class KafkaTest extends FunSuite {
 
   test("kafka") {
     createKafkaTopic()
-    produceAndSendKafkaTopicMessages()
-    consumeKafkaTopicMessages()
+    assert(produceAndSendKafkaTopicMessages() == 3)
+    assert(consumeKafkaTopicMessages() == 3)
   }
 
   private def createKafkaTopic(): Unit = {
@@ -32,7 +32,7 @@ class KafkaTest extends FunSuite {
     }
   }
 
-  private def produceAndSendKafkaTopicMessages(): Unit = {
+  private def produceAndSendKafkaTopicMessages(): Int = {
     val config = new ProducerConfig(loadProperties("/kafka.producer.properties"))
     val producer = new Producer[String, String](config)
     val keyedMessages = ArrayBuffer[KeyedMessage[String, String]]()
@@ -41,16 +41,18 @@ class KafkaTest extends FunSuite {
       keyedMessages += KeyedMessage[String, String](topic = kafkaTopic, key = keyValue, partKey = 0, message = keyValue)
     }
     producer.send(keyedMessages: _*)
-    producer.close()
+    producer.close
+    keyedMessages.size
   }
 
-  private def consumeKafkaTopicMessages(): Unit = {
+  private def consumeKafkaTopicMessages(): Int = {
     val config = new ConsumerConfig(loadProperties("/kafka.consumer.properties"))
     val connector = Consumer.create(config)
     val topicToStreams = connector.createMessageStreams(Map(kafkaTopic -> 1), new StringDecoder(), new StringDecoder())
     val streams = topicToStreams.get(kafkaTopic).get
     streams.foreach { s => s.foreach { m => println(s"topic: ${m.topic} key: ${m.key} value: ${m.message}") } }
-    connector.shutdown()
+    connector.shutdown // WARNING: Fails to shutdown.
+    streams.size
   }
 
   private def loadProperties(file: String): Properties = {

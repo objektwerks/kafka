@@ -45,6 +45,7 @@ Service
 
 Test
 ----
->See output at ./target/output/test.
+>See output at ./target/output/test. **WARNING** Kafka ConsumerConnector.shutdown does not work, which prevents
+the test from completing.
 
 1. sbt clean test

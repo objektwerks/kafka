@@ -1,6 +1,6 @@
 Kafka
 -----
->The purpose of this project is to prototype and test Kafka features.
+>The purpose of this project is to test Kafka features.
 
 ***
 
@@ -17,20 +17,6 @@ Installation
 3. brew install sbt
 4. brew install zookeeper
 
-Kafka
------
->For Scala 2.10, **brew install kafka**. For Scala 2.11, download release ( http://kafka.apache.org/downloads.html )
-
-1. edit $KAFKA_HOME/config/server.properties log.dirs=$KAFKA_HOME/logs
-2. mkdir $KAFKA_HOME/logs
-
-Environment
------------
->The following environment variables should be in your .bash_profile
-
-- export KAFKA_HOME="/Users/myhome/workspace/apache/kafka"
-- export PATH=${JAVA_HOME}/bin:${KAFKA_HOME}/bin:/usr/local/bin:/usr/local/sbin:$PATH
-
 Service
 -------
 >Start:
@@ -45,7 +31,4 @@ Service
 
 Test
 ----
->See output at ./target/output/test. **WARNING** Kafka ConsumerConnector.shutdown does not work, which prevents
-the test from completing.
-
 1. sbt clean test

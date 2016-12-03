@@ -1,58 +1,68 @@
 package kafka
 
+import java.util
 import java.util.Properties
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 import kafka.admin.AdminUtils
-import kafka.consumer.{Consumer, ConsumerConfig}
-import kafka.producer.{KeyedMessage, Producer, ProducerConfig}
-import kafka.serializer.StringDecoder
 import kafka.utils.ZkUtils
+import org.apache.kafka.clients.consumer.KafkaConsumer
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.scalatest.FunSuite
 
-import scala.collection.mutable.ArrayBuffer
 import scala.io.Source
 
 class KafkaTest extends FunSuite {
+  val producerProperties = loadProperties("/kafka.producer.properties")
+  val consumerProperties = loadProperties("/kafka.consumer.properties")
   val kafkaTopic = "kv"
 
   test("kafka") {
     createKafkaTopic()
-    assert(produceAndSendKafkaTopicMessages() == 3)
-    assert(consumeKafkaTopicMessages() == 3)
+    assert(produceAndSendKafkaTopicMessages(3) == 3)
+    assert(consumeKafkaTopicMessages(3) >= 3)
   }
 
   private def createKafkaTopic(): Unit = {
-    val zkClient = ZkUtils.createZkClient("localhost:2181", 3000, 3000)
+    val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
     val topicMetadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
-    topicMetadata.partitionsMetadata.foreach(println)
+    println(s"Kafka topic: ${topicMetadata.topic}")
     if (topicMetadata.topic != kafkaTopic) {
-      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, loadProperties("/kafka.producer.properties"))
-      println(s"Topic ( $kafkaTopic ) created.")
+      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, producerProperties)
+      println(s"Kafka Topic ( $kafkaTopic ) created.")
     }
   }
 
-  private def produceAndSendKafkaTopicMessages(): Int = {
-    val config = new ProducerConfig(loadProperties("/kafka.producer.properties"))
-    val producer = new Producer[String, String](config)
-    val keyedMessages = ArrayBuffer[KeyedMessage[String, String]]()
-    for (i <- 1 to 3) {
-      val keyValue = i.toString
-      keyedMessages += KeyedMessage[String, String](topic = kafkaTopic, key = keyValue, partKey = 0, message = keyValue)
+  private def produceAndSendKafkaTopicMessages(count: Int): Int = {
+    val producer = new KafkaProducer[String, String](producerProperties)
+    val messages = new AtomicInteger()
+    for (i <- 1 to count) {
+      val key = i.toString
+      val record = new ProducerRecord[String, String](kafkaTopic, 0, key, key)
+      producer.send(record)
+      println(s"Produced -> key: $key value: ${record.value}")
+      messages.incrementAndGet()
     }
-    producer.send(keyedMessages: _*)
-    producer.close
-    keyedMessages.size
+    producer.close(3000L, TimeUnit.MILLISECONDS)
+    messages.get
   }
 
-  private def consumeKafkaTopicMessages(): Int = {
-    val config = new ConsumerConfig(loadProperties("/kafka.consumer.properties"))
-    val connector = Consumer.create(config)
-    val topicToStreams = connector.createMessageStreams(Map(kafkaTopic -> 1), new StringDecoder(), new StringDecoder())
-    val streams = topicToStreams.get(kafkaTopic).get
-    streams.foreach { s => s.foreach { m => println(s"topic: ${m.topic} key: ${m.key} value: ${m.message}") } }
-    connector.shutdown // WARNING: Fails to shutdown.
-    streams.size
+  private def consumeKafkaTopicMessages(count: Int): Int = {
+    val consumer = new KafkaConsumer[String, String](consumerProperties)
+    consumer.subscribe(util.Arrays.asList(kafkaTopic))
+    val messages = new AtomicInteger()
+    while (messages.get < count) {
+      val records = consumer.poll(1000L)
+      val iterator = records.iterator()
+      while (iterator.hasNext) {
+        val record = iterator.next
+        println(s"Consumed -> key: ${record.key} value: ${record.value}")
+        messages.incrementAndGet()
+      }
+    }
+    messages.get
   }
 
   private def loadProperties(file: String): Properties = {

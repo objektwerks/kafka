@@ -31,4 +31,6 @@ Service
 
 Test
 ----
+>See output at ./target/output/test.
+
 1. sbt clean test

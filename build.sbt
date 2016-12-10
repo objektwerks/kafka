@@ -1,6 +1,6 @@
 name := "kafka"
 organization := "objektwerks"
-version := "1.0"
+version := "0.1-SNAPSHOT"
 scalaVersion := "2.11.8"
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 libraryDependencies ++= {

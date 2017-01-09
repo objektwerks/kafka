@@ -1,12 +1,12 @@
 name := "kafka"
 organization := "objektwerks"
 version := "0.1-SNAPSHOT"
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.1"
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 libraryDependencies ++= {
   Seq(
-    "org.apache.kafka" % "kafka_2.11" % "0.10.1.0" % "test",
-    "org.scalatest" % "scalatest_2.11" % "3.0.1" % "test"
+    "org.apache.kafka" % "kafka_2.12" % "0.10.1.1" % "test",
+    "org.scalatest" % "scalatest_2.12" % "3.0.1" % "test"
   )
 }
 scalacOptions ++= Seq(

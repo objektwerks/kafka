@@ -39,6 +39,7 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
 
   test("kafka") {
     produceMessages(3) shouldBe 3
+    Thread.sleep(1000L)
     consumeMessages(3) min 3
   }
 
@@ -51,7 +52,6 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
       logger.info(s"Producer send metadata: ${metadata.get.toString}")
       logger.info(s"Producer -> key: $key value: ${record.value}")
       messages.incrementAndGet()
-      producer.flush()
     }
     messages.get
   }
@@ -62,7 +62,7 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
     logger.info(s"Consumer messages polled initial count: ${messages.get()}")
     while (messages.get < count) {
       logger.info(s"Consumer messages current polled count: ${messages.get()}")
-      val records = consumer.poll(100L)
+      val records = consumer.poll(1000L)
       val iterator = records.iterator()
       while (iterator.hasNext) {
         val record = iterator.next

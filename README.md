@@ -37,3 +37,4 @@ Test
 Kafka
 -----
 * kafka-topics --zookeeper localhost:2181 --list
+* kafka-topics --zookeeper localhost:2181 --delete --topic name

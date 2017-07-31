@@ -33,6 +33,7 @@ class KafkaTest extends FunSuite with Matchers {
       logger.info(s"Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
       logger.info(s"Producer -> key: $key value: ${record.value}")
     }
+    producer.flush()
     producer.close(1000L, TimeUnit.MILLISECONDS)
   }
 

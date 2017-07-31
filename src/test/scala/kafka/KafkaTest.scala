@@ -20,7 +20,7 @@ class KafkaTest extends FunSuite with Matchers {
   test("kafka") {
     connectToZookeeper()
     produceMessages(3) shouldBe 3
-    consumeMessages(3) min 3
+    consumeMessages() min 3
   }
 
   def produceMessages(count: Int): Int = {
@@ -39,25 +39,18 @@ class KafkaTest extends FunSuite with Matchers {
     messages.get
   }
 
-  def consumeMessages(count: Int): Int = {
+  def consumeMessages(): Int = {
     val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
     consumer.subscribe(java.util.Arrays.asList(kafkaTopic))
-    val messages = new AtomicInteger()
-    logger.info(s"Consumer messages to poll count: $count")
-    logger.info(s"Consumer messages polled initial count: ${messages.get()}")
-    while (messages.get < count) {
-      logger.info(s"Consumer messages current polled count: ${messages.get()}")
-      val records = consumer.poll(100L)
-      logger.info(s"Consumer poll returned with ${records.count()} records.")
-      val iterator = records.iterator()
-      while (iterator.hasNext) {
-        val record = iterator.next
-        logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
-        messages.incrementAndGet()
-      }
+    val records = consumer.poll(1000L)
+    val count = records.count()
+    val iterator = records.iterator()
+    while (iterator.hasNext) {
+      val record = iterator.next
+      logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
     }
     consumer.close(1000L, TimeUnit.MILLISECONDS)
-    messages.get
+    count
   }
 
   def loadProperties(file: String): Properties = {

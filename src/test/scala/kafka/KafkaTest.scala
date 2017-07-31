@@ -32,6 +32,11 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
     }
   }
 
+  override protected def afterAll(): Unit = {
+    producer.close(3000L, TimeUnit.MILLISECONDS)
+    consumer.close()
+  }
+
   test("kafka") {
     produceMessages(3) shouldBe 3
     consumeMessages(3) min 3
@@ -46,15 +51,18 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
       logger.info(s"Producer send metadata: ${metadata.get.toString}")
       logger.info(s"Producer -> key: $key value: ${record.value}")
       messages.incrementAndGet()
+      producer.flush()
     }
-    producer.close(3000L, TimeUnit.MILLISECONDS)
     messages.get
   }
 
   def consumeMessages(count: Int): Int = {
     val messages = new AtomicInteger()
+    logger.info(s"Consumer messages to poll count: $count")
+    logger.info(s"Consumer messages polled initial count: ${messages.get()}")
     while (messages.get < count) {
-      val records = consumer.poll(1000L)
+      logger.info(s"Consumer messages current polled count: ${messages.get()}")
+      val records = consumer.poll(100L)
       val iterator = records.iterator()
       while (iterator.hasNext) {
         val record = iterator.next

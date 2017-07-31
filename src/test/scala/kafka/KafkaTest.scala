@@ -2,7 +2,6 @@ package kafka
 
 import java.util.Properties
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
@@ -15,17 +14,16 @@ import scala.io.Source
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
-  val kafkaTopic = "objektwerks"
+  val kafkaTopic = "kv"
 
   test("kafka") {
     connectToZookeeper()
-    produceMessages(3) shouldBe 3
+    produceMessages(3)
     consumeMessages() min 3
   }
 
-  def produceMessages(count: Int): Int = {
+  def produceMessages(count: Int): Unit = {
     val producer = new KafkaProducer[String, String](loadProperties("/kafka.producer.properties"))
-    val messages = new AtomicInteger()
     for (i <- 1 to count) {
       val key = i.toString
       val record = new ProducerRecord[String, String](kafkaTopic, 0, key, key)
@@ -33,17 +31,17 @@ class KafkaTest extends FunSuite with Matchers {
       val metadata = future.get(1000L, TimeUnit.MILLISECONDS)
       logger.info(s"Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
       logger.info(s"Producer -> key: $key value: ${record.value}")
-      messages.incrementAndGet()
     }
     producer.close(1000L, TimeUnit.MILLISECONDS)
-    messages.get
   }
 
   def consumeMessages(): Int = {
     val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
     consumer.subscribe(java.util.Arrays.asList(kafkaTopic))
+    logger.info(s"Consumer -> polling...")
     val records = consumer.poll(1000L)
     val count = records.count()
+    logger.info(s"Consumer -> $count records polled.")
     val iterator = records.iterator()
     while (iterator.hasNext) {
       val record = iterator.next

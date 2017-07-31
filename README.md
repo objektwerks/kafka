@@ -33,3 +33,7 @@ Service
 Test
 ----
 1. sbt clean test
+
+Kafka
+-----
+* kafka-topics --zookeeper localhost:2181 --list

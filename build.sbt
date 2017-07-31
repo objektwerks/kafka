@@ -23,5 +23,5 @@ scalacOptions ++= Seq(
   "-Xlint:missing-interpolator",
   "-Xlint"
 )
-fork in test := true
+fork in test := false
 javaOptions += "-server -Xss1m -Xmx2g"

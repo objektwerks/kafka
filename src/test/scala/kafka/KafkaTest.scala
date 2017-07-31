@@ -2,6 +2,7 @@ package kafka
 
 import java.util.Properties
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
@@ -19,7 +20,7 @@ class KafkaTest extends FunSuite with Matchers {
   test("kafka") {
     connectToZookeeper()
     produceMessages(3)
-    consumeMessages() min 3
+    consumeMessages(3) min 3
   }
 
   def produceMessages(count: Int): Unit = {
@@ -35,20 +36,23 @@ class KafkaTest extends FunSuite with Matchers {
     producer.close(1000L, TimeUnit.MILLISECONDS)
   }
 
-  def consumeMessages(): Int = {
+  def consumeMessages(retries: Int): Int = {
     val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
     consumer.subscribe(java.util.Arrays.asList(kafkaTopic))
-    logger.info(s"Consumer -> polling...")
-    val records = consumer.poll(1000L)
-    val count = records.count()
-    logger.info(s"Consumer -> $count records polled.")
-    val iterator = records.iterator()
-    while (iterator.hasNext) {
-      val record = iterator.next
-      logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
+    val count = new AtomicInteger()
+    for (i <- 1 to retries) {
+      logger.info(s"Consumer -> polling attempt $i ...")
+      val records = consumer.poll(100L)
+      logger.info(s"Consumer -> $count records polled.")
+      val iterator = records.iterator()
+      while (iterator.hasNext) {
+        val record = iterator.next
+        logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
+        count.incrementAndGet()
+      }
     }
     consumer.close(1000L, TimeUnit.MILLISECONDS)
-    count
+    count.get
   }
 
   def loadProperties(file: String): Properties = {

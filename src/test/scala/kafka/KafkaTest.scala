@@ -39,7 +39,6 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
 
   test("kafka") {
     produceMessages(3) shouldBe 3
-    Thread.sleep(1000L)
     consumeMessages(3) min 3
   }
 

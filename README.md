@@ -16,21 +16,20 @@ Installation
 2. brew install scala
 3. brew install sbt
 4. brew install zookeeper
+5. brew install kafka
 
 Service
 -------
 >Start:
 
 1. brew services start zookeeper
-2. nohup $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties > $KAFKA_HOME/logs/kafka.nohup&
+2. brew services start kafka
 
 >Stop:
 
-1. brew services stop zookeeper
-2. $KAFKA_HOME/bin/kafka-server-stop.sh
+1. brew services stop kafka
+2. brew services stop zookeeper
 
 Test
 ----
->See output at ./target/output/test.
-
 1. sbt clean test

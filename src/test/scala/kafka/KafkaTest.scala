@@ -9,48 +9,47 @@ import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import org.scalatest.FunSuite
+import org.apache.log4j.Logger
+import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
 
 import scala.io.Source
 
-class KafkaTest extends FunSuite {
-  val producerProperties = loadProperties("/kafka.producer.properties")
-  val consumerProperties = loadProperties("/kafka.consumer.properties")
+class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
+  val logger = Logger.getLogger(classOf[KafkaTest])
+  val producer = new KafkaProducer[String, String](loadProperties("/kafka.producer.properties"))
+  val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
   val kafkaTopic = "kv"
 
-  test("kafka") {
-    createKafkaTopic()
-    assert(produceAndSendKafkaTopicMessages(3) == 3)
-    assert(consumeKafkaTopicMessages(3) >= 3)
-  }
-
-  private def createKafkaTopic(): Unit = {
+  override protected def beforeAll(): Unit = {
     val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
     val topicMetadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
-    println(s"Kafka topic: ${topicMetadata.topic}")
+    logger.info(s"Kafka topic: ${topicMetadata.topic}")
     if (topicMetadata.topic != kafkaTopic) {
-      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, producerProperties)
-      println(s"Kafka Topic ( $kafkaTopic ) created.")
+      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, loadProperties("/kafka.producer.properties"))
+      logger.info(s"Kafka Topic ( $kafkaTopic ) created.")
     }
   }
 
-  private def produceAndSendKafkaTopicMessages(count: Int): Int = {
-    val producer = new KafkaProducer[String, String](producerProperties)
+  test("kafka") {
+    produceMessages(3) shouldBe 3
+    consumeMessages(3) min 3
+  }
+
+  def produceMessages(count: Int): Int = {
     val messages = new AtomicInteger()
     for (i <- 1 to count) {
       val key = i.toString
       val record = new ProducerRecord[String, String](kafkaTopic, 0, key, key)
       producer.send(record)
-      println(s"Produced -> key: $key value: ${record.value}")
+      logger.info(s"Producer -> key: $key value: ${record.value}")
       messages.incrementAndGet()
     }
     producer.close(3000L, TimeUnit.MILLISECONDS)
     messages.get
   }
 
-  private def consumeKafkaTopicMessages(count: Int): Int = {
-    val consumer = new KafkaConsumer[String, String](consumerProperties)
+  def consumeMessages(count: Int): Int = {
     consumer.subscribe(util.Arrays.asList(kafkaTopic))
     val messages = new AtomicInteger()
     while (messages.get < count) {
@@ -58,14 +57,14 @@ class KafkaTest extends FunSuite {
       val iterator = records.iterator()
       while (iterator.hasNext) {
         val record = iterator.next
-        println(s"Consumed -> key: ${record.key} value: ${record.value}")
+        logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
         messages.incrementAndGet()
       }
     }
     messages.get
   }
 
-  private def loadProperties(file: String): Properties = {
+  def loadProperties(file: String): Properties = {
     val properties = new Properties()
     properties.load(Source.fromInputStream(getClass.getResourceAsStream(file)).bufferedReader())
     properties

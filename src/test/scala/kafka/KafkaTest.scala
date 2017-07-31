@@ -48,6 +48,7 @@ class KafkaTest extends FunSuite with Matchers {
     while (messages.get < count) {
       logger.info(s"Consumer messages current polled count: ${messages.get()}")
       val records = consumer.poll(100L)
+      logger.info(s"Consumer poll returned with ${records.count()} records.")
       val iterator = records.iterator()
       while (iterator.hasNext) {
         val record = iterator.next

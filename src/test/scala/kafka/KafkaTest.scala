@@ -10,38 +10,22 @@ import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.log4j.Logger
-import org.scalatest.{BeforeAndAfterAll, FunSuite, Matchers}
+import org.scalatest.{FunSuite, Matchers}
 
 import scala.io.Source
 
-class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
+class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
   val kafkaTopic = "kv"
-  val producer = new KafkaProducer[String, String](loadProperties("/kafka.producer.properties"))
-  val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
-
-  override protected def beforeAll(): Unit = {
-    val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
-    val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
-    val topicMetadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
-    logger.info(s"Kafka topic: ${topicMetadata.topic}")
-    if (topicMetadata.topic != kafkaTopic) {
-      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, loadProperties("/kafka.producer.properties"))
-      logger.info(s"Kafka Topic ( $kafkaTopic ) created.")
-    }
-  }
-
-  override protected def afterAll(): Unit = {
-    producer.close(3000L, TimeUnit.MILLISECONDS)
-    consumer.close()
-  }
 
   test("kafka") {
+    connectToZookeeper()
     produceMessages(3) shouldBe 3
     consumeMessages(3) min 3
   }
 
   def produceMessages(count: Int): Int = {
+    val producer = new KafkaProducer[String, String](loadProperties("/kafka.producer.properties"))
     val messages = new AtomicInteger()
     for (i <- 1 to count) {
       val key = i.toString
@@ -51,10 +35,12 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
       logger.info(s"Producer -> key: $key value: ${record.value}")
       messages.incrementAndGet()
     }
+    producer.close(3000L, TimeUnit.MILLISECONDS)
     messages.get
   }
 
   def consumeMessages(count: Int): Int = {
+    val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
     consumer.subscribe(util.Arrays.asList(kafkaTopic))
     val messages = new AtomicInteger()
     logger.info(s"Consumer messages to poll count: $count")
@@ -69,6 +55,7 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
         messages.incrementAndGet()
       }
     }
+    consumer.close(3000L, TimeUnit.MILLISECONDS)
     messages.get
   }
 
@@ -76,5 +63,16 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
     val properties = new Properties()
     properties.load(Source.fromInputStream(getClass.getResourceAsStream(file)).bufferedReader())
     properties
+  }
+
+  def connectToZookeeper(): Unit = {
+    val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
+    val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
+    val topicMetadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
+    logger.info(s"Kafka topic: ${topicMetadata.topic}")
+    if (topicMetadata.topic != kafkaTopic) {
+      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, loadProperties("/kafka.producer.properties"))
+      logger.info(s"Kafka Topic ( $kafkaTopic ) created.")
+    }
   }
 }

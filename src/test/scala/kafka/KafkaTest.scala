@@ -69,7 +69,7 @@ class KafkaTest extends FunSuite with Matchers {
   def connectToZookeeper(): Unit = {
     val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
-    val topicMetadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
-    logger.info(s"Kafka topic: ${topicMetadata.topic}")
+    val metadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
+    logger.info(s"Kafka topic: ${metadata.topic}")
   }
 }

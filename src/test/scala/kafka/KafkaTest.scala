@@ -48,6 +48,7 @@ class KafkaTest extends FunSuite with Matchers {
       val iterator = records.iterator()
       while (iterator.hasNext) {
         val record = iterator.next
+        logger.info(s"Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset}")
         logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
         count.incrementAndGet()
       }

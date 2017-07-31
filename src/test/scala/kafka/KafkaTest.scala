@@ -15,7 +15,7 @@ import scala.io.Source
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
-  val kafkaTopic = "objektwerks" //change
+  val kafkaTopic = "objektwerks"
 
   test("kafka") {
     connectToZookeeper()

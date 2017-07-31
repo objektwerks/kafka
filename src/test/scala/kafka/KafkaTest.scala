@@ -1,6 +1,5 @@
 package kafka
 
-import java.util
 import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -16,7 +15,7 @@ import scala.io.Source
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
-  val kafkaTopic = "kv"
+  val kafkaTopic = "objektwerks"
 
   test("kafka") {
     connectToZookeeper()
@@ -30,24 +29,25 @@ class KafkaTest extends FunSuite with Matchers {
     for (i <- 1 to count) {
       val key = i.toString
       val record = new ProducerRecord[String, String](kafkaTopic, 0, key, key)
-      val metadata = producer.send(record)
-      logger.info(s"Producer send metadata: ${metadata.get.toString}")
+      val future = producer.send(record)
+      val metadata = future.get(1000L, TimeUnit.MILLISECONDS)
+      logger.info(s"Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
       logger.info(s"Producer -> key: $key value: ${record.value}")
       messages.incrementAndGet()
     }
-    producer.close(3000L, TimeUnit.MILLISECONDS)
+    producer.close(1000L, TimeUnit.MILLISECONDS)
     messages.get
   }
 
   def consumeMessages(count: Int): Int = {
     val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
-    consumer.subscribe(util.Arrays.asList(kafkaTopic))
+    consumer.subscribe(java.util.Arrays.asList(kafkaTopic))
     val messages = new AtomicInteger()
     logger.info(s"Consumer messages to poll count: $count")
     logger.info(s"Consumer messages polled initial count: ${messages.get()}")
     while (messages.get < count) {
       logger.info(s"Consumer messages current polled count: ${messages.get()}")
-      val records = consumer.poll(1000L)
+      val records = consumer.poll(100L)
       val iterator = records.iterator()
       while (iterator.hasNext) {
         val record = iterator.next
@@ -55,7 +55,7 @@ class KafkaTest extends FunSuite with Matchers {
         messages.incrementAndGet()
       }
     }
-    consumer.close(3000L, TimeUnit.MILLISECONDS)
+    consumer.close(1000L, TimeUnit.MILLISECONDS)
     messages.get
   }
 
@@ -70,9 +70,5 @@ class KafkaTest extends FunSuite with Matchers {
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
     val topicMetadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
     logger.info(s"Kafka topic: ${topicMetadata.topic}")
-    if (topicMetadata.topic != kafkaTopic) {
-      AdminUtils.createTopic(zkUtils, kafkaTopic, 1, 1, loadProperties("/kafka.producer.properties"))
-      logger.info(s"Kafka Topic ( $kafkaTopic ) created.")
-    }
   }
 }

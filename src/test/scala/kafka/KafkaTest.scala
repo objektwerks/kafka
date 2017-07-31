@@ -16,9 +16,10 @@ import scala.io.Source
 
 class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
+  val kafkaTopic = "kv"
   val producer = new KafkaProducer[String, String](loadProperties("/kafka.producer.properties"))
   val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
-  val kafkaTopic = "kv"
+  consumer.subscribe(util.Arrays.asList(kafkaTopic))
 
   override protected def beforeAll(): Unit = {
     val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
@@ -41,7 +42,8 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
     for (i <- 1 to count) {
       val key = i.toString
       val record = new ProducerRecord[String, String](kafkaTopic, 0, key, key)
-      producer.send(record)
+      val metadata = producer.send(record)
+      logger.info(s"Producer send metadata: ${metadata.get.toString}")
       logger.info(s"Producer -> key: $key value: ${record.value}")
       messages.incrementAndGet()
     }
@@ -50,7 +52,6 @@ class KafkaTest extends FunSuite with BeforeAndAfterAll with Matchers {
   }
 
   def consumeMessages(count: Int): Int = {
-    consumer.subscribe(util.Arrays.asList(kafkaTopic))
     val messages = new AtomicInteger()
     while (messages.get < count) {
       val records = consumer.poll(1000L)

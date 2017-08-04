@@ -11,6 +11,9 @@ import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
 
+/*
+  This test is broken due to Java/Scala impedience mismatch on KTable methods.
+ */
 class KafkaStreamTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaStreamTest])
 

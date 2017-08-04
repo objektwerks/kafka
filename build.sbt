@@ -3,8 +3,10 @@ organization := "objektwerks"
 version := "0.1-SNAPSHOT"
 scalaVersion := "2.12.3"
 libraryDependencies ++= {
+  val kafkaVersion = "0.11.0.0"
   Seq(
-    "org.apache.kafka" % "kafka_2.12" % "0.11.0.0" % "test",
+    "org.apache.kafka" % "kafka_2.12" % kafkaVersion,
+    "org.apache.kafka" % "kafka-streams" % kafkaVersion,
     "org.scalatest" % "scalatest_2.12" % "3.0.3" % "test"
   )
 }

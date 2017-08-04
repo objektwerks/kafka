@@ -18,7 +18,7 @@ class KafkaTest extends FunSuite with Matchers {
   val topic = "kv"
 
   test("kafka") {
-    assertTopic()
+    assertTopic() shouldBe topic
     produceMessages(3)
     consumeMessages(3) min 3
   }
@@ -63,11 +63,11 @@ class KafkaTest extends FunSuite with Matchers {
     properties
   }
 
-  def assertTopic(): Unit = {
+  def assertTopic(): String = {
     val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
     val metadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils)
-    logger.info(s"Kafka topic: ${metadata.topic}")
     zkClient.close()
+    metadata.topic
   }
 }

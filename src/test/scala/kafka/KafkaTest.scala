@@ -15,10 +15,10 @@ import scala.io.Source
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
-  val kafkaTopic = "kv"
+  val topic = "kv"
 
   test("kafka") {
-    connectToZookeeper()
+    assertTopic()
     produceMessages(3)
     consumeMessages(3) min 3
   }
@@ -28,7 +28,7 @@ class KafkaTest extends FunSuite with Matchers {
     for (i <- 1 to count) {
       val key = i.toString
       val value = key
-      val record = new ProducerRecord[String, String](kafkaTopic, key, value)
+      val record = new ProducerRecord[String, String](topic, key, value)
       val metadata = producer.send(record).get()
       logger.info(s"Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
       logger.info(s"Producer -> key: $key value: ${record.value}")
@@ -39,7 +39,7 @@ class KafkaTest extends FunSuite with Matchers {
 
   def consumeMessages(retries: Int): Int = {
     val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
-    consumer.subscribe(java.util.Arrays.asList(kafkaTopic))
+    consumer.subscribe(java.util.Arrays.asList(topic))
     val count = new AtomicInteger()
     for (i <- 1 to retries) {
       logger.info(s"Consumer -> polling attempt $i ...")
@@ -63,10 +63,11 @@ class KafkaTest extends FunSuite with Matchers {
     properties
   }
 
-  def connectToZookeeper(): Unit = {
+  def assertTopic(): Unit = {
     val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
-    val metadata = AdminUtils.fetchTopicMetadataFromZk(kafkaTopic, zkUtils)
+    val metadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils)
     logger.info(s"Kafka topic: ${metadata.topic}")
+    zkClient.close()
   }
 }

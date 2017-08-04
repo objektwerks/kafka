@@ -2,7 +2,7 @@ Kafka
 -----
 >The purpose of this project is to test Kafka features.
 
->**WARNING** []2017.8.4] KafkaStreamTest is broken due to Java-Scala type inference issues with KTable.
+>**WARNING** [2017.8.4] KafkaStreamTest is broken due to Java-Scala type inference issues with KTable.
 
 ***
 

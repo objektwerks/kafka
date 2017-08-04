@@ -10,6 +10,7 @@ import scala.io.Source
 object TestConfig {
   val kafkaConsumerProperties = loadProperties("/kafka.consumer.properties")
   val kafkaProducerProperties = loadProperties("/kafka.producer.properties")
+  val kafkaStreamProperties = loadProperties("/kafka.stream.properties")
 
   val keyValueKafkaTopic = "kv"
   val valueKafkaTopic = "v"

@@ -12,18 +12,19 @@ import org.apache.log4j.Logger
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.io.Source
+import collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
-  val topic = "kv"
 
   test("kafka") {
-    assertTopic() shouldBe topic
-    produceMessages(3)
-    consumeMessages(3) min 3
+    val topic = "kv"
+    assertTopic(topic) shouldBe topic
+    produceMessages(topic, 3)
+    consumeMessages(topic, 3) min 3
   }
 
-  def produceMessages(count: Int): Unit = {
+  def produceMessages(topic: String, count: Int): Unit = {
     val producer = new KafkaProducer[String, String](loadProperties("/kafka.producer.properties"))
     for (i <- 1 to count) {
       val key = i.toString
@@ -37,9 +38,9 @@ class KafkaTest extends FunSuite with Matchers {
     producer.close(1000L, TimeUnit.MILLISECONDS)
   }
 
-  def consumeMessages(retries: Int): Int = {
+  def consumeMessages(topic: String, retries: Int): Int = {
     val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
-    consumer.subscribe(java.util.Arrays.asList(topic))
+    consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()
     for (i <- 1 to retries) {
       logger.info(s"Consumer -> polling attempt $i ...")
@@ -63,7 +64,7 @@ class KafkaTest extends FunSuite with Matchers {
     properties
   }
 
-  def assertTopic(): String = {
+  def assertTopic(topic: String): String = {
     val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
     val metadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils)

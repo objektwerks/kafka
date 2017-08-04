@@ -1,21 +1,18 @@
 package kafka
 
 import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicInteger
 
-import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuite, Matchers}
-
-import scala.collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
 
   test("kafka") {
-    val topic = TestConfig.keyValueKafkaTopic
-    TestConfig.assertTopic(topic) shouldBe topic
+    import TestConfig._
+    val topic = keyValueKafkaTopic
+    assertTopic(topic) shouldBe topic
     produceMessages(topic, 3)
     consumeMessages(topic, 3) min 3
   }
@@ -32,25 +29,5 @@ class KafkaTest extends FunSuite with Matchers {
     }
     producer.flush()
     producer.close(1000L, TimeUnit.MILLISECONDS)
-  }
-
-  def consumeMessages(topic: String, retries: Int): Int = {
-    val consumer = new KafkaConsumer[String, String](TestConfig.kafkaConsumerProperties)
-    consumer.subscribe(List(topic).asJava)
-    val count = new AtomicInteger()
-    for (i <- 1 to retries) {
-      logger.info(s"Consumer -> polling attempt $i ...")
-      val records = consumer.poll(100L)
-      logger.info(s"Consumer -> ${records.count} records polled.")
-      val iterator = records.iterator()
-      while (iterator.hasNext) {
-        val record = iterator.next
-        logger.info(s"Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset}")
-        logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
-        count.incrementAndGet()
-      }
-    }
-    consumer.close(1000L, TimeUnit.MILLISECONDS)
-    count.get
   }
 }

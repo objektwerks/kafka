@@ -1,6 +1,5 @@
 package kafka
 
-import java.util.Properties
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -11,8 +10,7 @@ import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuite, Matchers}
 
-import scala.io.Source
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
@@ -25,7 +23,7 @@ class KafkaTest extends FunSuite with Matchers {
   }
 
   def produceMessages(topic: String, count: Int): Unit = {
-    val producer = new KafkaProducer[String, String](loadProperties("/kafka.producer.properties"))
+    val producer = new KafkaProducer[String, String](TestConfig.kafkaProducerProperties)
     for (i <- 1 to count) {
       val key = i.toString
       val value = key
@@ -39,7 +37,7 @@ class KafkaTest extends FunSuite with Matchers {
   }
 
   def consumeMessages(topic: String, retries: Int): Int = {
-    val consumer = new KafkaConsumer[String, String](loadProperties("/kafka.consumer.properties"))
+    val consumer = new KafkaConsumer[String, String](TestConfig.kafkaConsumerProperties)
     consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()
     for (i <- 1 to retries) {
@@ -56,12 +54,6 @@ class KafkaTest extends FunSuite with Matchers {
     }
     consumer.close(1000L, TimeUnit.MILLISECONDS)
     count.get
-  }
-
-  def loadProperties(file: String): Properties = {
-    val properties = new Properties()
-    properties.load(Source.fromInputStream(getClass.getResourceAsStream(file)).bufferedReader())
-    properties
   }
 
   def assertTopic(topic: String): String = {

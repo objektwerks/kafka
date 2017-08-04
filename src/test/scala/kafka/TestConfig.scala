@@ -23,7 +23,6 @@ object TestConfig {
     properties
   }
 
-
   def assertTopic(topic: String): String = {
     val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
     val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)

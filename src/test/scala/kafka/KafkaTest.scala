@@ -3,8 +3,6 @@ package kafka
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-import kafka.admin.AdminUtils
-import kafka.utils.ZkUtils
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.log4j.Logger
@@ -16,8 +14,8 @@ class KafkaTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaTest])
 
   test("kafka") {
-    val topic = "kv"
-    assertTopic(topic) shouldBe topic
+    val topic = TestConfig.keyValueKafkaTopic
+    TestConfig.assertTopic(topic) shouldBe topic
     produceMessages(topic, 3)
     consumeMessages(topic, 3) min 3
   }
@@ -54,13 +52,5 @@ class KafkaTest extends FunSuite with Matchers {
     }
     consumer.close(1000L, TimeUnit.MILLISECONDS)
     count.get
-  }
-
-  def assertTopic(topic: String): String = {
-    val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
-    val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
-    val metadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils)
-    zkClient.close()
-    metadata.topic
   }
 }

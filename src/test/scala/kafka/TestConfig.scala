@@ -10,8 +10,11 @@ import scala.io.Source
 object TestConfig {
   val kafkaConsumerProperties = loadProperties("/kafka.consumer.properties")
   val kafkaProducerProperties = loadProperties("/kafka.producer.properties")
+
   val keyValueKafkaTopic = "kv"
   val valueKafkaTopic = "v"
+
+  val gettysburgAddress = Source.fromInputStream(getClass.getResourceAsStream("/gettysburg.address.txt")).getLines.toSeq
 
   def loadProperties(file: String): Properties = {
     val properties = new Properties()

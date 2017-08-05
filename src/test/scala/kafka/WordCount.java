@@ -25,7 +25,7 @@ public class WordCount {
         Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
         try {
-            Thread.sleep(3000L);
+            Thread.sleep(9000L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

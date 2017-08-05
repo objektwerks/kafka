@@ -38,7 +38,7 @@ class KafkaStreamTest extends FunSuite with Matchers {
   def processStream(sourceTopic: String, sinkTopic: String, properties: Properties): Unit = {
     val builder: KStreamBuilder = new KStreamBuilder()
     val lines: KStream[String, String] = builder.stream(sourceTopic)
-    val counts: KTable[String, String] = lines.flatMapValues(line => line.toLowerCase.split("\\W+").toIterable.asJava).groupByKey().count()
+    val counts: KTable[String, Long] = lines.flatMapValues(line => line.toLowerCase.split("\\W+").toIterable.asJava).groupByKey().count()
     counts.to(sinkTopic)
     val streams: KafkaStreams = new KafkaStreams(builder, properties)
     streams.start()

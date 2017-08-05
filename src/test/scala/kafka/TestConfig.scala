@@ -19,9 +19,9 @@ object TestConfig {
   val kafkaProducerProperties = loadProperties("/kafka.producer.properties")
   val kafkaStreamProperties = loadProperties("/kafka.stream.properties")
 
-  val keyValueKafkaTopic = "kv"
-  val valueKafkaTopic = "v"
-  val countKafkaTopic = "count"
+  val keyValueTopic = "keyvalue"
+  val wordTopic = "word"
+  val countTopic = "count"
 
   val gettysburgAddress = Source.fromInputStream(getClass.getResourceAsStream("/gettysburg.address.txt")).getLines.toSeq
 

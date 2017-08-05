@@ -11,16 +11,13 @@ import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
 
-/*
-  This test is broken due to Java/Scala impedience mismatch on KTable methods.
- */
 class KafkaStreamTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaStreamTest])
 
   test("kafka stream") {
     import TestConfig._
-    val sourceTopic = valueKafkaTopic
-    val sinkTopic = countKafkaTopic
+    val sourceTopic = wordTopic
+    val sinkTopic = countTopic
     assertTopic(sourceTopic) shouldBe sourceTopic
     assertTopic(sinkTopic) shouldBe sinkTopic
     produceStream(sourceTopic, gettysburgAddress)

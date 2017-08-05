@@ -11,7 +11,7 @@ class KafkaTest extends FunSuite with Matchers {
 
   test("kafka") {
     import TestConfig._
-    val topic = keyValueKafkaTopic
+    val topic = keyValueTopic
     assertTopic(topic) shouldBe topic
     produceMessages(topic, 3)
     consumeMessages(topic, 3) min 3

@@ -1,15 +1,10 @@
 package kafka
 
-import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import org.apache.kafka.streams.KafkaStreams
-import org.apache.kafka.streams.kstream.{KStream, KStreamBuilder, KTable}
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuite, Matchers}
-
-import scala.collection.JavaConverters._
 
 class KafkaStreamTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaStreamTest])
@@ -35,6 +30,11 @@ class KafkaStreamTest extends FunSuite with Matchers {
     producer.close(1000L, TimeUnit.MILLISECONDS)
   }
 
+/*
+    NOTE: Unable to work around KStream type errors with this line of code:
+
+      val counts: KTable[String, Long] = lines.flatMapValues(line => line.toLowerCase.split("\\W+").toIterable.asJava).groupByKey().count()
+
   def processStream(sourceTopic: String, sinkTopic: String, properties: Properties): Unit = {
     val builder: KStreamBuilder = new KStreamBuilder()
     val lines: KStream[String, String] = builder.stream(sourceTopic)
@@ -44,4 +44,5 @@ class KafkaStreamTest extends FunSuite with Matchers {
     streams.start()
     sys.addShutdownHook(new Thread(() => { streams.close(10, TimeUnit.SECONDS) }))
   }
+*/
 }

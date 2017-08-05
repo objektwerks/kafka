@@ -1,15 +1,10 @@
 package kafka
 
-import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import org.apache.kafka.streams._
-import org.apache.kafka.streams.kstream.{KStream, KStreamBuilder, KTable}
 import org.apache.log4j.Logger
 import org.scalatest.{FunSuite, Matchers}
-
-import scala.collection.JavaConverters._
 
 class KafkaStreamTest extends FunSuite with Matchers {
   val logger = Logger.getLogger(classOf[KafkaStreamTest])
@@ -21,7 +16,7 @@ class KafkaStreamTest extends FunSuite with Matchers {
     assertTopic(sourceTopic) shouldBe sourceTopic
     assertTopic(sinkTopic) shouldBe sinkTopic
     produceStream(sourceTopic, gettysburgAddress)
-    processStream(sourceTopic, sinkTopic, kafkaStreamProperties)
+    WordCount.count(sourceTopic, sinkTopic, kafkaStreamProperties)
     consumeMessages(sinkTopic, 3)
   }
 
@@ -37,6 +32,10 @@ class KafkaStreamTest extends FunSuite with Matchers {
     producer.close(1000L, TimeUnit.MILLISECONDS)
   }
 
+/*  Currently unable to correct type errors with this line of code:
+
+      lines.flatMap(line => line.toLowerCase.split("\\W+").toIterable.asJava).groupByKey().count()
+
   def processStream(sourceTopic: String, sinkTopic: String, properties: Properties): Unit = {
     val builder: KStreamBuilder = new KStreamBuilder()
     val lines: KStream[String, Long] = builder.stream(sourceTopic)
@@ -45,5 +44,5 @@ class KafkaStreamTest extends FunSuite with Matchers {
     val streams: KafkaStreams = new KafkaStreams(builder, properties)
     streams.start()
     sys.addShutdownHook(new Thread(() => { streams.close(10, TimeUnit.SECONDS) }))
-  }
+  }*/
 }

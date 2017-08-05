@@ -21,7 +21,7 @@ object TestConfig {
 
   val keyValueTopic = "keyvalue"
   val wordTopic = "word"
-  val countTopic = "count"
+  val wordCountTopic = "wordcount"
 
   val gettysburgAddress = Source.fromInputStream(getClass.getResourceAsStream("/gettysburg.address.txt")).getLines.toSeq
 

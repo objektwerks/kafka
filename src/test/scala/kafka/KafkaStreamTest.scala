@@ -33,14 +33,12 @@ class KafkaStreamTest extends FunSuite with Matchers {
     producer.close(1000L, TimeUnit.MILLISECONDS)
   }
 
-/*  NOTE: Unable to work around KStream type errors with this line of code:
-
-      val counts: KTable[String, Long] = lines.flatMapValues(line => line.toLowerCase.split("\\W+").toIterable.asJava).groupByKey().count()
+/*  NOTE: Failed to resolve KStream/KTable type errors.
 
   def processStream(sourceTopic: String, sinkTopic: String, properties: Properties): Unit = {
     val builder: KStreamBuilder = new KStreamBuilder()
     val lines: KStream[String, String] = builder.stream(sourceTopic)
-    val counts: KTable[String, Long] = lines.flatMapValues(line => line.toLowerCase.split("\\W+").toIterable.asJava).groupByKey().count()
+    val counts: KTable[String, Long] = lines.flatMapValues(line => line.toLowerCase.split("\\W+").toIterable.asJava).groupBy((_, word) => word).count()
     counts.to(sinkTopic)
     val streams: KafkaStreams = new KafkaStreams(builder, properties)
     streams.start()

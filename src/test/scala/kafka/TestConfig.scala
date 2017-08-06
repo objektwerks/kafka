@@ -4,13 +4,10 @@ import java.util.Properties
 
 import kafka.admin.AdminUtils
 import kafka.utils.ZkUtils
-import org.apache.log4j.Logger
 
 import scala.io.Source
 
 object TestConfig {
-  val logger = Logger.getLogger("KafkaTest")
-
   val kafkaConsumerKeyValueProperties = loadProperties("/kafka.consumer.key.value.properties")
   val kafkaConsumerWordCountProperties = loadProperties("/kafka.consumer.word.count.properties")
   val kafkaProducerProperties = loadProperties("/kafka.producer.properties")

@@ -29,7 +29,7 @@ class KafkaTest extends FunSuite with Matchers {
       val record = new ProducerRecord[String, String](topic, key, value)
       val metadata = producer.send(record).get()
       logger.info(s"Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
-      logger.info(s"Producer -> key: $key value: ${record.value}")
+      logger.info(s"Producer -> key: ${record.key} value: ${record.value}")
     }
     producer.flush()
     producer.close(1000L, TimeUnit.MILLISECONDS)

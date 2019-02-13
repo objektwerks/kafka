@@ -2,15 +2,15 @@ package kafka
 
 import java.util.concurrent.TimeUnit
 
+import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import org.apache.log4j.Logger
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
 
 class KafkaStreamTest extends FunSuite with Matchers {
-  val logger = Logger.getLogger(classOf[KafkaStreamTest])
+  val logger = Logger(classOf[KafkaStreamTest])
 
   test("kafka stream") {
     import TestConfig._

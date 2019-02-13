@@ -1,29 +1,14 @@
 name := "kafka"
 organization := "objektwerks"
 version := "0.1-SNAPSHOT"
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.8"
 libraryDependencies ++= {
-  val kafkaVersion = "1.1.1"
+  val kafkaVersion = "2.1.0"
   Seq(
-    "org.apache.kafka" % "kafka_2.12" % kafkaVersion,
+    "org.apache.kafka" %% "kafka" % kafkaVersion,
     "org.apache.kafka" % "kafka-streams" % kafkaVersion,
+    "org.slf4j" % "slf4j-api" % "1.7.25",
+    "ch.qos.logback" % "logback-classic" % "1.2.3",
     "org.scalatest" % "scalatest_2.12" % "3.0.5" % "test"
   )
 }
-scalacOptions ++= Seq(
-  "-language:postfixOps",
-  "-language:reflectiveCalls",
-  "-language:implicitConversions",
-  "-language:higherKinds",
-  "-feature",
-  "-Ywarn-unused-import",
-  "-Ywarn-unused",
-  "-Ywarn-dead-code",
-  "-unchecked",
-  "-deprecation",
-  "-Xfatal-warnings",
-  "-Xlint:missing-interpolator",
-  "-Xlint"
-)
-fork in test := true
-javaOptions += "-server -Xss1m -Xmx2g"

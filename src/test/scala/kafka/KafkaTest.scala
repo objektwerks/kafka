@@ -3,15 +3,15 @@ package kafka
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
+import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
-import org.apache.log4j.Logger
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
-  val logger = Logger.getLogger(classOf[KafkaTest])
+  val logger = Logger(classOf[KafkaTest])
 
   test("kafka") {
     import TestConfig._

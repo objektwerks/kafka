@@ -1,5 +1,6 @@
 package kafka
 
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 
 import com.typesafe.scalalogging.Logger
@@ -14,8 +15,8 @@ class KafkaStreamTest extends FunSuite with Matchers {
 
   test("kafka stream") {
     import TestConfig._
-    assertTopic(wordTopic) shouldBe wordTopic
-    assertTopic(wordCountTopic) shouldBe wordCountTopic
+    assertTopic(wordTopic) shouldBe true
+    assertTopic(wordCountTopic) shouldBe true
     produceStream(wordTopic, gettysburgAddress)
     WordCount.count(wordTopic, wordCountTopic, kafkaStreamProperties)
     consumeMessages(wordCountTopic, 3)
@@ -51,7 +52,7 @@ class KafkaStreamTest extends FunSuite with Matchers {
     consumer.subscribe(List(topic).asJava)
     for (i <- 1 to retries) {
       logger.info(s"Consumer -> polling attempt $i ...")
-      val records = consumer.poll(100L)
+      val records = consumer.poll(Duration.ofMillis(100L))
       logger.info(s"Consumer -> ${records.count} records polled.")
       val iterator = records.iterator()
       while (iterator.hasNext) {
@@ -60,6 +61,6 @@ class KafkaStreamTest extends FunSuite with Matchers {
         logger.info(s"Consumer -> key: ${record.key} value: ${record.value}")
       }
     }
-    consumer.close(1000L, TimeUnit.MILLISECONDS)
+    consumer.close()
   }
 }

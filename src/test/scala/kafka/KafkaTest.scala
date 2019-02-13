@@ -1,5 +1,6 @@
 package kafka
 
+import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -16,7 +17,7 @@ class KafkaTest extends FunSuite with Matchers {
   test("kafka") {
     import TestConfig._
     val topic = keyValueTopic
-    assertTopic(topic) shouldBe topic
+    assertTopic(topic) shouldBe true
     produceMessages(topic, 3)
     consumeMessages(topic, 3) min 3
   }
@@ -41,7 +42,7 @@ class KafkaTest extends FunSuite with Matchers {
     val count = new AtomicInteger()
     for (i <- 1 to retries) {
       logger.info(s"Consumer -> polling attempt $i ...")
-      val records = consumer.poll(100L)
+      val records = consumer.poll(Duration.ofMillis(100L))
       logger.info(s"Consumer -> ${records.count} records polled.")
       val iterator = records.iterator()
       while (iterator.hasNext) {
@@ -51,7 +52,7 @@ class KafkaTest extends FunSuite with Matchers {
         count.incrementAndGet()
       }
     }
-    consumer.close(1000L, TimeUnit.MILLISECONDS)
+    consumer.close()
     count.get
   }
 }

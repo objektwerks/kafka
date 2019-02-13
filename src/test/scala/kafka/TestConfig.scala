@@ -2,8 +2,7 @@ package kafka
 
 import java.util.Properties
 
-import kafka.admin.AdminUtils
-import kafka.utils.ZkUtils
+import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 
 import scala.io.Source
 
@@ -19,17 +18,21 @@ object TestConfig {
 
   val gettysburgAddress = Source.fromInputStream(getClass.getResourceAsStream("/gettysburg.address.txt")).getLines.toSeq
 
+  val adminClientProperties = new Properties()
+  adminClientProperties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
+
   def loadProperties(file: String): Properties = {
     val properties = new Properties()
     properties.load(Source.fromInputStream(getClass.getResourceAsStream(file)).bufferedReader())
     properties
   }
 
-  def assertTopic(topic: String): String = {
-    val zkClient = ZkUtils.createZkClient("localhost:2181", 10000, 10000)
-    val zkUtils = ZkUtils(zkClient, isZkSecurityEnabled = false)
-    val metadata = AdminUtils.fetchTopicMetadataFromZk(topic, zkUtils)
-    zkClient.close()
-    metadata.topic
+  def assertTopic(topic: String): Boolean = {
+    import collection.JavaConverters._
+
+    val adminClient: AdminClient = AdminClient.create(adminClientProperties)
+    val newTopic = new NewTopic(topic, 1, 1.toShort)
+    val createTopicResult = adminClient.createTopics(List(newTopic).asJavaCollection)
+    createTopicResult.values().containsKey(topic)
   }
 }

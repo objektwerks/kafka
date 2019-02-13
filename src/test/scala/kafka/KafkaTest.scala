@@ -37,7 +37,7 @@ class KafkaTest extends FunSuite with Matchers {
   }
 
   def consumeMessages(topic: String, retries: Int): Int = {
-    val consumer = new KafkaConsumer[String, String](TestConfig.kafkaConsumerKeyValueProperties)
+    val consumer = new KafkaConsumer[String, String](TestConfig.kafkaConsumerProperties)
     consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()
     for (i <- 1 to retries) {

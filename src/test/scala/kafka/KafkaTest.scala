@@ -4,18 +4,18 @@ import java.time.Duration
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
-import com.typesafe.scalalogging.Logger
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.scalatest.{FunSuite, Matchers}
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
-  val logger = Logger(classOf[KafkaTest])
+  val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
 
   test("kafka") {
-    import TestConfig._
+    import KafkaCommon._
     val topic = keyValueTopic
     assertTopic(topic) shouldBe true
     produceMessages(topic, 3)
@@ -23,7 +23,7 @@ class KafkaTest extends FunSuite with Matchers {
   }
 
   def produceMessages(topic: String, count: Int): Unit = {
-    val producer = new KafkaProducer[String, String](TestConfig.kafkaProducerProperties)
+    val producer = new KafkaProducer[String, String](KafkaCommon.kafkaProducerProperties)
     for (i <- 1 to count) {
       val key = i.toString
       val value = key
@@ -37,7 +37,7 @@ class KafkaTest extends FunSuite with Matchers {
   }
 
   def consumeMessages(topic: String, retries: Int): Int = {
-    val consumer = new KafkaConsumer[String, String](TestConfig.kafkaConsumerProperties)
+    val consumer = new KafkaConsumer[String, String](KafkaCommon.kafkaConsumerProperties)
     consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()
     for (i <- 1 to retries) {

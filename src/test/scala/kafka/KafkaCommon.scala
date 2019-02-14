@@ -7,7 +7,7 @@ import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import scala.collection.JavaConverters._
 import scala.io.Source
 
-object TestConfig {
+object KafkaCommon {
   val kafkaConsumerProperties = loadProperties("/kafka.consumer.properties")
   val kafkaProducerProperties = loadProperties("/kafka.producer.properties")
   val keyValueTopic = "keyvalue"

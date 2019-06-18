@@ -52,6 +52,7 @@ class KafkaTest extends FunSuite with Matchers {
         count.incrementAndGet()
       }
     }
+    consumer.commitAsync()
     consumer.close()
     count.get
   }

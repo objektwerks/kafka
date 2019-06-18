@@ -1,7 +1,6 @@
 package kafka
 
 import java.time.Duration
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.kafka.clients.consumer.KafkaConsumer
@@ -33,7 +32,7 @@ class KafkaTest extends FunSuite with Matchers {
       logger.info(s"Producer -> key: ${record.key} value: ${record.value}")
     }
     producer.flush()
-    producer.close(1000L, TimeUnit.MILLISECONDS)
+    producer.close()
   }
 
   def consumeMessages(topic: String, retries: Int): Int = {

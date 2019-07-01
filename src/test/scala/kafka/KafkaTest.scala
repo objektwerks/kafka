@@ -46,8 +46,8 @@ class KafkaTest extends FunSuite with Matchers {
         logger.info(s"Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
         count.incrementAndGet()
       }
+      if (records.count > 0) consumer.commitAsync()
     }
-    consumer.commitSync()
     consumer.close()
     count.get
   }

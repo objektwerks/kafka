@@ -12,10 +12,10 @@ import scala.collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
   val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
+  val topic = "keyvalue"
 
   test("producer -> consumer") {
     import KafkaCommon._
-    val topic = keyValueTopic
     assertTopic(topic) shouldBe true
     produceMessages(topic, 3)
     consumeMessages(topic, 3) should be >= 3

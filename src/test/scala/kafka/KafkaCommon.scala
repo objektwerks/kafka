@@ -10,8 +10,6 @@ import scala.io.Source
 object KafkaCommon {
   val kafkaConsumerProperties = loadProperties("/kafka-consumer.properties")
   val kafkaProducerProperties = loadProperties("/kafka-producer.properties")
-  val keyValueTopic = "keyvalue"
-
   val adminClientProperties = new Properties()
   adminClientProperties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
 

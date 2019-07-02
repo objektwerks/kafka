@@ -18,7 +18,7 @@ class KafkaTest extends FunSuite with Matchers {
     val topic = keyValueTopic
     assertTopic(topic) shouldBe true
     produceMessages(topic, 3)
-    consumeMessages(topic, 3) min 3
+    consumeMessages(topic, 3) should be >= 3
   }
 
   def produceMessages(topic: String, count: Int): Unit = {
@@ -28,8 +28,8 @@ class KafkaTest extends FunSuite with Matchers {
       val value = key
       val record = new ProducerRecord[String, String](topic, key, value)
       val metadata = producer.send(record).get()
-      logger.info(s"Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
-      logger.info(s"Producer -> key: ${record.key} value: ${record.value}")
+      logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
+      logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
     }
     producer.flush()
     producer.close()
@@ -41,14 +41,15 @@ class KafkaTest extends FunSuite with Matchers {
     val count = new AtomicInteger()
     for (i <- 1 to retries) {
       val records = consumer.poll(Duration.ofMillis(100L))
-      logger.info(s"Consumer -> { ${records.count} } records polled on attempt { $i }.")
+      logger.info(s"*** Consumer -> { ${records.count} } records polled on attempt { $i }.")
       records.iterator.asScala.foreach { record =>
-        logger.info(s"Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
+        logger.info(s"*** Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
         count.incrementAndGet()
       }
       if (records.count > 0) consumer.commitAsync()
     }
     consumer.close()
+    logger.info(s"*** Consumer -> count is ${count.get}")
     count.get
   }
 }

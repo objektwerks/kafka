@@ -2,8 +2,6 @@ Kafka
 -----
 >The purpose of this project is to test Kafka features.
 
-***
-
 Homebrew
 --------
 >Install Homebrew on OSX.
@@ -37,6 +35,9 @@ Test
 Kafka
 -----
 * kafka-topics --zookeeper localhost:2181 --list
-* kafka-topics --zookeeper localhost:2181 --delete --topic kv
+* kafka-topics --zookeeper localhost:2181 --describe --topic keyvalue
+* kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:9092 --topic keyvalue --time -1
+* kafka-consumer-groups --bootstrap-server localhost:9092 --group objektwerks-group --describe
+* kafka-topics --zookeeper localhost:2181 --delete --topic keyvalue
 * kafka-consumer-groups --bootstrap-server localhost:9092 --list
 * kafka-consumer-groups --bootstrap-server localhost:9092 --describe --group objektwerks-group

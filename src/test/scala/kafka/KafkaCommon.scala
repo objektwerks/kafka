@@ -8,8 +8,8 @@ import scala.collection.JavaConverters._
 import scala.io.Source
 
 object KafkaCommon {
-  val kafkaConsumerProperties = loadProperties("/kafka.consumer.properties")
-  val kafkaProducerProperties = loadProperties("/kafka.producer.properties")
+  val kafkaConsumerProperties = loadProperties("/kafka-consumer.properties")
+  val kafkaProducerProperties = loadProperties("/kafka-producer.properties")
   val keyValueTopic = "keyvalue"
 
   val adminClientProperties = new Properties()

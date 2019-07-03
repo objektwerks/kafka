@@ -1,7 +1,6 @@
 package kafka
 
 import java.time.Duration
-import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
@@ -11,14 +10,21 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
-  val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
+  implicit val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
   val topic = "keyvalue"
 
   test("producer -> consumer") {
     import KafkaCommon._
     assertTopic(topic) shouldBe true
+
     produceMessages(topic, 3)
-    consumeMessages(topic, 3) should be >= 3
+    val postProduceMessageCount = countMessages(topic)
+
+    consumeMessages(topic)
+    val postConsumeMessageCount = countMessages(topic)
+
+    postProduceMessageCount should be >= 3
+    postConsumeMessageCount shouldEqual 0
   }
 
   def produceMessages(topic: String, count: Int): Unit = {
@@ -35,21 +41,17 @@ class KafkaTest extends FunSuite with Matchers {
     producer.close()
   }
 
-  def consumeMessages(topic: String, retries: Int): Int = {
+  def consumeMessages(topic: String): Unit = {
     val consumer = new KafkaConsumer[String, String](KafkaCommon.kafkaConsumerProperties)
     consumer.subscribe(List(topic).asJava)
-    val count = new AtomicInteger()
-    for (i <- 1 to retries) {
+    for (i <- 1 to 2) {
       val records = consumer.poll(Duration.ofMillis(100L))
       logger.info(s"*** Consumer -> { ${records.count} } records polled on attempt { $i }.")
       records.iterator.asScala.foreach { record =>
         logger.info(s"*** Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
-        count.incrementAndGet()
       }
       if (records.count > 0) consumer.commitAsync()
     }
     consumer.close()
-    logger.info(s"*** Consumer -> count is ${count.get}")
-    count.get
   }
 }

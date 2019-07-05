@@ -39,7 +39,7 @@ object KafkaCommon {
       records.iterator.asScala.foreach { _ => count.incrementAndGet }
     }
     consumer.close()
-    logger.info(s"*** Consumer -> record count is ${count.get}")
+    logger.info(s"+++ Consumer -> record count is ${count.get}")
     count.get
   }
 }

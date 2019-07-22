@@ -34,6 +34,8 @@ Test
 
 Kafka
 -----
+>topics: keyvalue, keyvalue-tx
+
 * kafka-topics --zookeeper localhost:2181 --list
 * kafka-topics --zookeeper localhost:2181 --describe --topic keyvalue
 * kafka-run-class kafka.tools.GetOffsetShell --broker-list localhost:9092 --topic keyvalue --time -1

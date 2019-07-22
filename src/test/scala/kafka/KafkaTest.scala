@@ -12,6 +12,7 @@ import scala.collection.JavaConverters._
 class KafkaTest extends FunSuite with Matchers {
   implicit val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
   val topic = "keyvalue"
+  val topicTx = "keyvalue-tx"
 
   test("producer -> consumer") {
     import KafkaCommon._

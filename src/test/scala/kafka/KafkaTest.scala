@@ -10,12 +10,12 @@ import org.slf4j.LoggerFactory
 import scala.collection.JavaConverters._
 
 class KafkaTest extends FunSuite with Matchers {
+  import KafkaCommon._
+
   implicit val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
-  val topic = "keyvalue"
-  val topicTx = "keyvalue-tx"
 
   test("producer -> consumer") {
-    import KafkaCommon._
+    val topic = "keyvalue"
     assertTopic(topic) shouldBe true
 
     produceMessages(topic, 3)
@@ -26,6 +26,20 @@ class KafkaTest extends FunSuite with Matchers {
 
     postProduceMessageCount should be >= 3
     postConsumeMessageCount shouldEqual 0
+  }
+
+  test("tx-producer -> tx-consumer") {
+    val topic = "keyvalue-tx"
+    assertTopic(topic) shouldBe true
+
+    produceTxMessages(topic, 3)
+    val postProduceTxMessageCount = countMessages(topic)
+
+    consumeTxMessages(topic)
+    val postConsumeTxMessageCount = countMessages(topic)
+
+    postProduceTxMessageCount should be >= 0 // TODO
+    postConsumeTxMessageCount shouldEqual 0
   }
 
   def produceMessages(topic: String, count: Int): Unit = {
@@ -54,5 +68,13 @@ class KafkaTest extends FunSuite with Matchers {
       if (records.count > 0) consumer.commitAsync()
     }
     consumer.close()
+  }
+
+  def produceTxMessages(topic: String, count: Int): Unit = {
+    ()
+  }
+
+  def consumeTxMessages(topic: String): Unit = {
+    ()
   }
 }

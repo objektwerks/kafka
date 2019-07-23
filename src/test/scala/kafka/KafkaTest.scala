@@ -65,7 +65,6 @@ class KafkaTest extends FunSuite with Matchers {
     val metadata = producer.send(record).get()
     logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
     logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
-    ()
   }
 
   def produceMessages(topic: String, count: Int): Unit = {

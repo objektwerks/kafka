@@ -90,7 +90,6 @@ class KafkaTest extends FunSuite with Matchers {
         logger.error(s"*** Tx Producer error: $error")
         producer.abortTransaction()
     } finally {
-      producer.flush()
       producer.close()
     }
   }

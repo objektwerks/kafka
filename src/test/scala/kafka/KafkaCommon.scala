@@ -32,8 +32,8 @@ object KafkaCommon {
     createTopicResult.values().containsKey(topic)
   }
 
-  def countMessages(topic: String)(implicit logger: Logger): Int = {
-    val consumer = new KafkaConsumer[String, String](kafkaConsumerProperties)
+  def countMessages(topic: String, properties: Properties)(implicit logger: Logger): Int = {
+    val consumer = new KafkaConsumer[String, String](properties)
     consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()
     for (_ <- 1 to 2) {
@@ -41,7 +41,7 @@ object KafkaCommon {
       records.iterator.asScala.foreach { _ => count.incrementAndGet }
     }
     consumer.close()
-    logger.info(s"+++ Consumer -> record count is ${count.get}")
+    logger.info(s"+++ Consumer -> record count is ${count.get} for topic: $topic")
     count.get
   }
 }

@@ -1,6 +1,7 @@
 package kafka
 
 import java.time.Duration
+import java.util.Properties
 
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
@@ -20,10 +21,10 @@ class KafkaTest extends FunSuite with Matchers {
     assertTopic(topic) shouldBe true
 
     produceMessages(topic, 3)
-    val postProduceMessageCount = countMessages(topic)
+    val postProduceMessageCount = countMessages(topic, kafkaConsumerProperties)
 
-    consumeMessages(topic)
-    val postConsumeMessageCount = countMessages(topic)
+    consumeMessages(topic, kafkaConsumerProperties)
+    val postConsumeMessageCount = countMessages(topic, kafkaConsumerProperties)
 
     postProduceMessageCount should be >= 3
     postConsumeMessageCount shouldEqual 0
@@ -34,10 +35,10 @@ class KafkaTest extends FunSuite with Matchers {
     assertTopic(topic) shouldBe true
 
     produceTxMessages(topic, 3)
-    val postProduceTxMessageCount = countMessages(topic)
+    val postProduceTxMessageCount = countMessages(topic, kafkaConsumerTxProperties)
 
-    consumeTxMessages(topic)
-    val postConsumeTxMessageCount = countMessages(topic)
+    consumeMessages(topic, kafkaConsumerTxProperties)
+    val postConsumeTxMessageCount = countMessages(topic, kafkaConsumerTxProperties)
 
     postProduceTxMessageCount should be >= 3
     postConsumeTxMessageCount shouldEqual 0
@@ -55,20 +56,6 @@ class KafkaTest extends FunSuite with Matchers {
     }
     producer.flush()
     producer.close()
-  }
-
-  def consumeMessages(topic: String): Unit = {
-    val consumer = new KafkaConsumer[String, String](kafkaConsumerProperties)
-    consumer.subscribe(List(topic).asJava)
-    for (i <- 1 to 2) {
-      val records = consumer.poll(Duration.ofMillis(100L))
-      logger.info(s"*** Consumer -> { ${records.count} } records polled on attempt { $i }.")
-      records.iterator.asScala.foreach { record =>
-        logger.info(s"*** Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
-      }
-      if (records.count > 0) consumer.commitSync()
-    }
-    consumer.close()
   }
 
   def produceTxMessages(topic: String, count: Int): Unit = {
@@ -94,16 +81,16 @@ class KafkaTest extends FunSuite with Matchers {
     }
   }
 
-  def consumeTxMessages(topic: String): Unit = {
-    val consumer = new KafkaConsumer[String, String](kafkaConsumerTxProperties)
+  def consumeMessages(topic: String, properties: Properties): Unit = {
+    val consumer = new KafkaConsumer[String, String](properties)
     consumer.subscribe(List(topic).asJava)
     for (i <- 1 to 2) {
       val records = consumer.poll(Duration.ofMillis(100L))
-      logger.info(s"*** Tx Consumer -> { ${records.count} } records polled on attempt { $i }.")
+      logger.info(s"*** Consumer -> { ${records.count} } records polled on attempt { $i }.")
       records.iterator.asScala.foreach { record =>
-        logger.info(s"*** Tx Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
+        logger.info(s"*** Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
       }
-      if (records.count > 0) consumer.commitAsync()
+      if (records.count > 0) consumer.commitSync()
     }
     consumer.close()
   }

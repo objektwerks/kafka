@@ -2,23 +2,30 @@ package kafka
 
 import java.time.Duration
 import java.util.Properties
+import java.util.concurrent.atomic.AtomicInteger
 
+import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.KafkaException
 import org.scalatest.{FunSuite, Matchers}
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
+import scala.io.Source
 
 class KafkaTest extends FunSuite with Matchers {
-  import KafkaCommon._
-
   implicit val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
+  val kafkaConsumerProperties = loadProperties("/kafka-consumer.properties")
+  val kafkaProducerProperties = loadProperties("/kafka-producer.properties")
+  val kafkaConsumerTxProperties = loadProperties("/kafka-consumer-tx.properties")
+  val kafkaProducerTxProperties = loadProperties("/kafka-producer-tx.properties")
+  val adminClientProperties = new Properties()
+  adminClientProperties.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092")
 
-  test("producer -> consumer") {
+  test("at-least-once") {
     val topic = "keyvalue"
-    assertTopic(topic) shouldBe true
+    createTopic(topic) shouldBe true
 
     produceMessages(topic, 3)
     val postProduceMessageCount = countMessages(topic, kafkaConsumerProperties)
@@ -30,9 +37,9 @@ class KafkaTest extends FunSuite with Matchers {
     postConsumeMessageCount shouldEqual 0
   }
 
-  test("tx-producer -> tx-consumer") {
+  test("exactly-once") {
     val topic = "keyvalue-tx"
-    assertTopic(topic) shouldBe true
+    createTopic(topic) shouldBe true
 
     produceTxMessages(topic, 3)
     val postProduceTxMessageCount = countMessages(topic, kafkaConsumerTxProperties)
@@ -42,6 +49,13 @@ class KafkaTest extends FunSuite with Matchers {
 
     postProduceTxMessageCount should be >= 3
     postConsumeTxMessageCount shouldEqual 0
+  }
+
+  def createTopic(topic: String): Boolean = {
+    val adminClient = AdminClient.create(adminClientProperties)
+    val newTopic = new NewTopic(topic, 1, 1.toShort)
+    val createTopicResult = adminClient.createTopics(List(newTopic).asJavaCollection)
+    createTopicResult.values().containsKey(topic)
   }
 
   def produceMessage(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
@@ -89,5 +103,24 @@ class KafkaTest extends FunSuite with Matchers {
       if (records.count > 0) consumer.commitSync()
     }
     consumer.close()
+  }
+
+  def countMessages(topic: String, properties: Properties)(implicit logger: Logger): Int = {
+    val consumer = new KafkaConsumer[String, String](properties)
+    consumer.subscribe(List(topic).asJava)
+    val count = new AtomicInteger()
+    for (_ <- 1 to 2) {
+      val records = consumer.poll(Duration.ofMillis(100L))
+      records.iterator.asScala.foreach { _ => count.incrementAndGet }
+    }
+    consumer.close()
+    logger.info(s"+++ Consumer -> record count is ${count.get} for topic: $topic")
+    count.get
+  }
+
+  def loadProperties(file: String): Properties = {
+    val properties = new Properties()
+    properties.load(Source.fromInputStream(getClass.getResourceAsStream(file)).bufferedReader())
+    properties
   }
 }

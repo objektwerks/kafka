@@ -44,16 +44,19 @@ class KafkaTest extends FunSuite with Matchers {
     postConsumeTxMessageCount shouldEqual 0
   }
 
+  def produceMessage(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
+    val key = i.toString
+    val value = key
+    val record = new ProducerRecord[String, String](topic, key, value)
+    val metadata = producer.send(record).get()
+    logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
+    logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
+    ()
+  }
+
   def produceMessages(topic: String, count: Int): Unit = {
     val producer = new KafkaProducer[String, String](kafkaProducerProperties)
-    for (i <- 1 to count) {
-      val key = i.toString
-      val value = key
-      val record = new ProducerRecord[String, String](topic, key, value)
-      val metadata = producer.send(record).get()
-      logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
-      logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
-    }
+    for (i <- 1 to count) produceMessage(i, producer, topic)
     producer.flush()
     producer.close()
   }
@@ -63,14 +66,7 @@ class KafkaTest extends FunSuite with Matchers {
     producer.initTransactions()
     try {
       producer.beginTransaction()
-      for (i <- 1 to count) {
-        val key = i.toString
-        val value = key
-        val record = new ProducerRecord[String, String](topic, key, value)
-        val metadata = producer.send(record).get()
-        logger.info(s"*** Tx Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
-        logger.info(s"*** Tx Producer -> key: ${record.key} value: ${record.value}")
-      }
+      for (i <- 1 to count) produceMessage(i, producer, topic)
       producer.commitTransaction()
     } catch {
       case error: KafkaException =>

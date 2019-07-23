@@ -73,7 +73,7 @@ class KafkaTest extends FunSuite with Matchers {
       }
       producer.commitTransaction()
     } catch {
-      case error:KafkaException =>
+      case error: KafkaException =>
         logger.error(s"*** Tx Producer error: $error")
         producer.abortTransaction()
     } finally {

@@ -27,25 +27,25 @@ class KafkaTest extends FunSuite with Matchers {
     val topic = "keyvalue"
     createTopic(topic) shouldBe true
 
-    produceMessages(topic, 3)
-    val postProduceMessageCount = countMessages(topic, kafkaConsumerProperties)
+    produceRecords(topic, 3)
+    val postProduceRecordCount = countRecords(topic, kafkaConsumerProperties)
 
-    consumeMessages(topic, kafkaConsumerProperties)
-    val postConsumeMessageCount = countMessages(topic, kafkaConsumerProperties)
+    consumeRecords(topic, kafkaConsumerProperties)
+    val postConsumeRecordCount = countRecords(topic, kafkaConsumerProperties)
 
-    postProduceMessageCount should be >= 3
-    postConsumeMessageCount shouldEqual 0
+    postProduceRecordCount should be >= 3
+    postConsumeRecordCount shouldEqual 0
   }
 
   test("exactly-once") {
     val topic = "keyvalue-tx"
     createTopic(topic) shouldBe true
 
-    produceTxMessages(topic, 3)
-    val postProduceTxMessageCount = countMessages(topic, kafkaConsumerTxProperties)
+    produceRecordsWithTransaction(topic, 3)
+    val postProduceTxMessageCount = countRecords(topic, kafkaConsumerTxProperties)
 
-    consumeMessages(topic, kafkaConsumerTxProperties)
-    val postConsumeTxMessageCount = countMessages(topic, kafkaConsumerTxProperties)
+    consumeRecords(topic, kafkaConsumerTxProperties)
+    val postConsumeTxMessageCount = countRecords(topic, kafkaConsumerTxProperties)
 
     postProduceTxMessageCount should be >= 3
     postConsumeTxMessageCount shouldEqual 0
@@ -58,7 +58,7 @@ class KafkaTest extends FunSuite with Matchers {
     createTopicResult.values().containsKey(topic)
   }
 
-  def produceMessage(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
+  def produceRecordWithCallback(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
     val key = i.toString
     val value = key
     val record = new ProducerRecord[String, String](topic, key, value)
@@ -72,19 +72,28 @@ class KafkaTest extends FunSuite with Matchers {
     ()
   }
 
-  def produceMessages(topic: String, count: Int): Unit = {
+  def produceRecordWithFuture(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
+    val key = i.toString
+    val value = key
+    val record = new ProducerRecord[String, String](topic, key, value)
+    val metadata = producer.send(record).get()
+    logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
+    logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
+  }
+
+  def produceRecords(topic: String, count: Int): Unit = {
     val producer = new KafkaProducer[String, String](kafkaProducerProperties)
-    for (i <- 1 to count) produceMessage(i, producer, topic)
+    for (i <- 1 to count) produceRecordWithCallback(i, producer, topic)
     producer.flush()
     producer.close()
   }
 
-  def produceTxMessages(topic: String, count: Int): Unit = {
+  def produceRecordsWithTransaction(topic: String, count: Int): Unit = {
     val producer = new KafkaProducer[String, String](kafkaProducerTxProperties)
     producer.initTransactions()
     try {
       producer.beginTransaction()
-      for (i <- 1 to count) produceMessage(i, producer, topic)
+      for (i <- 1 to count) produceRecordWithFuture(i, producer, topic)
       producer.commitTransaction()
     } catch {
       case error: KafkaException =>
@@ -95,7 +104,7 @@ class KafkaTest extends FunSuite with Matchers {
     }
   }
 
-  def consumeMessages(topic: String, properties: Properties): Unit = {
+  def consumeRecords(topic: String, properties: Properties): Unit = {
     val consumer = new KafkaConsumer[String, String](properties)
     consumer.subscribe(List(topic).asJava)
     for (i <- 1 to 2) {
@@ -109,7 +118,7 @@ class KafkaTest extends FunSuite with Matchers {
     consumer.close()
   }
 
-  def countMessages(topic: String, properties: Properties): Int = {
+  def countRecords(topic: String, properties: Properties): Int = {
     val consumer = new KafkaConsumer[String, String](properties)
     consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()

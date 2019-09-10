@@ -9,13 +9,13 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 import org.apache.kafka.common.KafkaException
 import org.scalatest.{FunSuite, Matchers}
-import org.slf4j.{Logger, LoggerFactory}
+import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
 import scala.io.Source
 
 class KafkaTest extends FunSuite with Matchers {
-  implicit val logger = LoggerFactory.getLogger(this.getClass.getSimpleName)
+  val logger = LoggerFactory.getLogger(getClass.getSimpleName)
   val kafkaConsumerProperties = loadProperties("/kafka-consumer.properties")
   val kafkaProducerProperties = loadProperties("/kafka-producer.properties")
   val kafkaConsumerTxProperties = loadProperties("/kafka-consumer-tx.properties")
@@ -104,7 +104,7 @@ class KafkaTest extends FunSuite with Matchers {
     consumer.close()
   }
 
-  def countMessages(topic: String, properties: Properties)(implicit logger: Logger): Int = {
+  def countMessages(topic: String, properties: Properties): Int = {
     val consumer = new KafkaConsumer[String, String](properties)
     consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()

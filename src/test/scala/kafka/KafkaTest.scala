@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import org.apache.kafka.clients.consumer.KafkaConsumer
-import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
+import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.KafkaException
 import org.scalatest.{FunSuite, Matchers}
 import org.slf4j.LoggerFactory
@@ -62,9 +62,14 @@ class KafkaTest extends FunSuite with Matchers {
     val key = i.toString
     val value = key
     val record = new ProducerRecord[String, String](topic, key, value)
-    val metadata = producer.send(record).get()
-    logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
-    logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
+    producer.send(record, (metadata: RecordMetadata, exception: Exception) => {
+      if (exception != null)
+        logger.error(s"*** Producer -> topic: $topic send failed!", exception)
+      else
+        logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
+        logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
+    })
+    ()
   }
 
   def produceMessages(topic: String, count: Int): Unit = {

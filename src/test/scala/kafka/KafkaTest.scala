@@ -58,6 +58,13 @@ class KafkaTest extends FunSuite with Matchers {
     createTopicResult.values().containsKey(topic)
   }
 
+  def produceRecords(topic: String, count: Int): Unit = {
+    val producer = new KafkaProducer[String, String](kafkaProducerProperties)
+    for (i <- 1 to count) produceRecordWithCallback(i, producer, topic)
+    producer.flush()
+    producer.close()
+  }
+
   def produceRecordWithCallback(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
     val key = i.toString
     val value = key
@@ -70,22 +77,6 @@ class KafkaTest extends FunSuite with Matchers {
         logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
     })
     ()
-  }
-
-  def produceRecordWithFuture(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
-    val key = i.toString
-    val value = key
-    val record = new ProducerRecord[String, String](topic, key, value)
-    val metadata = producer.send(record).get()
-    logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
-    logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
-  }
-
-  def produceRecords(topic: String, count: Int): Unit = {
-    val producer = new KafkaProducer[String, String](kafkaProducerProperties)
-    for (i <- 1 to count) produceRecordWithCallback(i, producer, topic)
-    producer.flush()
-    producer.close()
   }
 
   def produceRecordsWithTransaction(topic: String, count: Int): Unit = {
@@ -102,6 +93,15 @@ class KafkaTest extends FunSuite with Matchers {
     } finally {
       producer.close()
     }
+  }
+
+  def produceRecordWithFuture(i: Int, producer: KafkaProducer[String, String], topic: String): Unit = {
+    val key = i.toString
+    val value = key
+    val record = new ProducerRecord[String, String](topic, key, value)
+    val metadata = producer.send(record).get()
+    logger.info(s"*** Producer -> topic: ${metadata.topic} partition: ${metadata.partition} offset: ${metadata.offset}")
+    logger.info(s"*** Producer -> key: ${record.key} value: ${record.value}")
   }
 
   def consumeRecords(topic: String, properties: Properties): Unit = {

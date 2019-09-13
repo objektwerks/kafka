@@ -1,7 +1,7 @@
 name := "kafka"
 organization := "objektwerks"
 version := "0.1-SNAPSHOT"
-scalaVersion := "2.12.9"
+scalaVersion := "2.12.10"
 libraryDependencies ++= {
   Seq(
     "org.apache.kafka" %% "kafka" % "2.3.0",

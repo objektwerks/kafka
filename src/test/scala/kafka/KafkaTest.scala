@@ -8,13 +8,14 @@ import org.apache.kafka.clients.admin.{AdminClient, AdminClientConfig, NewTopic}
 import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord, RecordMetadata}
 import org.apache.kafka.common.KafkaException
-import org.scalatest.{FunSuite, Matchers}
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.should.Matchers
 import org.slf4j.LoggerFactory
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.io.Source
 
-class KafkaTest extends FunSuite with Matchers {
+class KafkaTest extends AnyFunSuite with Matchers {
   val logger = LoggerFactory.getLogger(getClass.getSimpleName)
   val kafkaConsumerProperties = loadProperties("/kafka-consumer.properties")
   val kafkaProducerProperties = loadProperties("/kafka-producer.properties")

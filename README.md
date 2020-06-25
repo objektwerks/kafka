@@ -13,8 +13,7 @@ Installation
 1. brew tap homebrew/services
 2. brew install scala
 3. brew install sbt
-4. brew install zookeeper
-5. brew install kafka
+4. brew install kafka ( which installs zookeeper )
 
 Service
 -------
@@ -27,6 +26,12 @@ Service
 
 1. brew services stop kafka
 2. brew services stop zookeeper
+
+Warning
+-------
+>Starting zookeeper via homebrew does not always work as expected. So alternatively start both services as follows:
+1. zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties &
+2. kafka-server-start /usr/local/etc/kafka/server.properties &
 
 Test
 ----

@@ -109,7 +109,7 @@ class KafkaTest extends AnyFunSuite with Matchers {
     val consumer = new KafkaConsumer[String, String](properties)
     consumer.subscribe(List(topic).asJava)
     for (i <- 1 to 2) {
-      val records = consumer.poll(Duration.ofMillis(100L))
+      val records = consumer.poll(Duration.ofMillis(1000L))
       logger.info(s"*** Consumer -> { ${records.count} } records polled on attempt { $i }.")
       records.iterator.asScala.foreach { record =>
         logger.info(s"*** Consumer -> topic: ${record.topic} partition: ${record.partition} offset: ${record.offset} key: ${record.key} value: ${record.value}")
@@ -124,7 +124,7 @@ class KafkaTest extends AnyFunSuite with Matchers {
     consumer.subscribe(List(topic).asJava)
     val count = new AtomicInteger()
     for (_ <- 1 to 2) {
-      val records = consumer.poll(Duration.ofMillis(100L))
+      val records = consumer.poll(Duration.ofMillis(1000L))
       records.iterator.asScala.foreach { _ => count.incrementAndGet }
     }
     consumer.close()

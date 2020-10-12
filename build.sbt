@@ -4,8 +4,8 @@ version := "0.1-SNAPSHOT"
 scalaVersion := "2.13.2"
 libraryDependencies ++= {
   Seq(
-    "org.apache.kafka" %% "kafka" % "2.5.0",
+    "org.apache.kafka" %% "kafka" % "2.6.0",
     "ch.qos.logback" % "logback-classic" % "1.2.3",
-    "org.scalatest" %% "scalatest" % "3.2.0" % Test
+    "org.scalatest" %% "scalatest" % "3.2.2" % Test
   )
 }

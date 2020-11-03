@@ -1,15 +1,9 @@
 Kafka
 -----
->The purpose of this project is to test Kafka features.
-
-Homebrew
---------
->Install Homebrew on OSX.
+>Kafka feature tests.
 
 Installation
 ------------
->Install the following packages via Homebrew:
-
 1. brew tap homebrew/services
 2. brew install scala
 3. brew install sbt
@@ -17,19 +11,13 @@ Installation
 
 Service
 -------
->Start 
-
-1. brew services start zookeeper
-2. brew services start kafka
-
->Stop:
-
-1. brew services stop kafka
-2. brew services stop zookeeper
+1. brew services start zookeeper & kafka
+2. brew services stop kafka & zookeeper
 
 Warning
 -------
->Starting zookeeper via homebrew does not always work as expected. So alternatively start both services as follows:
+>Starting zookeeper via homebrew does not always work as expected.
+>So alternatively start both services as follows:
 1. zookeeper-server-start /usr/local/etc/kafka/zookeeper.properties &
 2. kafka-server-start /usr/local/etc/kafka/server.properties &
 

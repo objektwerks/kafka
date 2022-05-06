@@ -6,6 +6,6 @@ libraryDependencies ++= {
   Seq(
     "org.apache.kafka" %% "kafka" % "2.8.1",
     "ch.qos.logback" % "logback-classic" % "1.2.11",
-    "org.scalatest" %% "scalatest" % "3.2.11" % Test
+    "org.scalatest" %% "scalatest" % "3.2.12" % Test
   )
 }
